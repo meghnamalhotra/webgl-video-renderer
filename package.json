@@ -1,22 +1,21 @@
 {
-    "name": "wcjs-renderer",
-    "description": "renderer for WebChimera.js",
-    "version": "0.1.10",
+    "name": "webgl-video-renderer",
+    "description": "allow render video frames on HTML canvas with WebGL",
+    "version": "0.1.2",
     "license": "MIT",
     "author": "Sergey Radionov <rsatom@gmail.com>",
+    "contributors": [
+        { "name": "Ivo Georgiev" },
+        { "name": "Alexandru Branza" }
+    ],
     "keywords": [
         "video",
         "renderer",
-        "webchimera",
-        "webchimera.js",
-        "vlc",
-        "libvlc"
+        "wcjs",
+        "magics"
     ],
     "repository": {
         "type": "git",
-        "url": "https://github.com/Magics-Group/wcjs-renderer"
-    },
-    "optionalDependencies": {
-        "webchimera.js": "latest"
+        "url": "https://github.com/RSATom/webgl-video-renderer"
     }
 }

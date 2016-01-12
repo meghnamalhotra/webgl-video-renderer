@@ -102,19 +102,21 @@ function setupCanvas(canvas, options) {
     return gl;
 }
 
-function frameSetup(canvas, gl, width, height, pixelFormat) {
+function frameSetup(canvas, gl, width, height) {
     canvas.width = width;
     canvas.height = height;
     gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
 }
 
-function renderFrame(gl, videoFrame) {
-    gl.y.fill(videoFrame.width, videoFrame.height,
-        videoFrame.subarray(0, videoFrame.uOffset));
-    gl.u.fill(videoFrame.width >> 1, videoFrame.height >> 1,
-        videoFrame.subarray(videoFrame.uOffset, videoFrame.vOffset));
-    gl.v.fill(videoFrame.width >> 1, videoFrame.height >> 1,
-        videoFrame.subarray(videoFrame.vOffset, videoFrame.length));
+function renderFrame(gl, videoFrame, width, height, uOffset, vOffset) {
+    gl.y.fill(width, height,
+        videoFrame.subarray(0, uOffset));
+    gl.u.fill(width >> 1, height >> 1,
+        videoFrame.subarray(uOffset, vOffset));
+    gl.v.fill(width >> 1, height >> 1,
+        videoFrame.subarray(vOffset, videoFrame.length));
+
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 }
 
 function fillBlack(gl) {
@@ -132,14 +134,12 @@ function fillBlack(gl) {
 }
 
 module.exports = {
-    init: function(canvas, source, options) {
-        if (!canvas || !source) {
+    setupCanvas: function(canvas, options) {
+        if (!canvas)
             return;
-        }
 
-        if (typeof canvas === 'string') {
+        if (typeof canvas === 'string')
             canvas = window.document.querySelector(canvas);
-        }
 
         if (!options) {
             options = {
@@ -151,78 +151,20 @@ module.exports = {
         if (!glContext)
             return;
 
-        var frameWidth = 0,
-            frameheight =  0,
-            framePixelFormat;
-
-        canvas.addEventListener("webglcontextlost",
-            function(event) {
-                event.preventDefault();
-                console.log("webgl context lost");
-                glContext = null;
-            });
-
-        canvas.addEventListener("webglcontextrestored",
-            function(event) {
-                glContext = setupCanvas(canvas, options);
-                if (glContext) {
-                    if (frameWidth && frameHeight) {
-                       frameSetup(canvas, glContext,
-                                  frameWidth, frameHeight,
-                                  framePixelFormat);
-                    }
-                    console.log("webgl context restored");
-                } else {
-                    console.log("fail restore webgl context");
-                }
-            });
-
-        var drawLoop, newFrame;
-        source.onFrameSetup =
-            function(width, height, pixelFormat) {
-                framwWidth = width;
-                frameHeight = height;
-                framePixelFormat = pixelFormat;
-
-                if( !glContext )
-                    return;
-
-                frameSetup(canvas, glContext, width, height, pixelFormat);
-
-                var draw = function() {
-                    drawLoop =
-                        window.requestAnimationFrame(function() {
-                            if (glContext && newFrame)
-                                glContext.drawArrays(glContext.TRIANGLE_STRIP, 0, 4);
-                            newFrame = false;
-                            draw();
-                        });
-                };
-                draw();
-            };
-
-        source.onFrameReady =
-            function(videoFrame) {
-                if (glContext)
-                    renderFrame(glContext, videoFrame);
-                newFrame = true;
-            };
-
-        source.onFrameCleanup =
-            function() {
-                if (drawLoop) {
-                    window.cancelAnimationFrame(drawLoop);
-                    drawLoop = null;
-                }
-            };
-
         var renderContext = {
             canvas: canvas,
-            clearCanvas: function() {
-                fillBlack(glContext);
+            gl: glContext,
+            render: function(videoFrame, width, height, uOffset, vOffset) {
+                if (width != this.canvas.width || height != this.canvas.height)
+                    frameSetup(canvas, this.gl, width, height);
+
+                renderFrame(this.gl, videoFrame, width, height, uOffset, vOffset);
+            },
+            fillBlack: function() {
+                fillBlack(this.gl);
             }
         }
 
         return renderContext;
-    },
+    }
 };

@@ -1,7 +1,7 @@
 {
     "name": "webgl-video-renderer",
     "description": "allow render video frames on HTML canvas with WebGL",
-    "version": "0.1.2",
+    "version": "0.2.0",
     "license": "MIT",
     "author": "Sergey Radionov <rsatom@gmail.com>",
     "contributors": [

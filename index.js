@@ -102,9 +102,7 @@ function setupCanvas(canvas, options) {
     return gl;
 }
 
-function frameSetup(canvas, gl, width, height) {
-    canvas.width = width;
-    canvas.height = height;
+function frameSetup(canvas, gl) {
     gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
 }
 
@@ -156,7 +154,7 @@ module.exports = {
             gl: glContext,
             render: function(videoFrame, width, height, uOffset, vOffset) {
                 if (width != this.canvas.width || height != this.canvas.height)
-                    frameSetup(canvas, this.gl, width, height);
+                    frameSetup(canvas, this.gl);
 
                 renderFrame(this.gl, videoFrame, width, height, uOffset, vOffset);
             },
